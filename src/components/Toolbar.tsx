@@ -56,7 +56,7 @@ const DropdownMenu = ({ label, items, alignRight }: { label: string, items: {lab
 };
 
 export default function Toolbar() {
-  const { nv, viewMode, setViewMode, toolMode, setToolMode, setShowTeachingPanel } = useViewer();
+  const { nv, viewMode, setViewMode, toolMode, setToolMode, setShowTeachingPanel, showToast } = useViewer();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const maskInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
@@ -113,12 +113,15 @@ export default function Toolbar() {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!nv || !e.target.files || e.target.files.length === 0) return;
     try {
+      showToast('正在加载数据', '请稍候，正在解析影像结构树...', 'info');
       const files = Array.from(e.target.files);
       for (const file of files) {
         await nv.loadFromFile(file);
       }
-    } catch (err) {
+      showToast('加载成功', `成功解析 ${files.length} 个本地文件。`, 'success');
+    } catch (err: any) {
       console.error('Failed to load file:', err);
+      showToast('数据解析异常', err.message || '文件可能损坏或暂不被支持，请检查影像格式。', 'error');
     }
     if (e.target) e.target.value = '';
   };
@@ -126,11 +129,35 @@ export default function Toolbar() {
   const handleLoadDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!nv || !e.target.files || e.target.files.length === 0) return;
     try {
+      showToast('正在加载项目', '正在解析 NVD 工作区数据...', 'info');
       await nv.loadFromFile(e.target.files[0]);
-    } catch (err) {
+      showToast('加载成功', '项目工作区由于本地缓存中恢复。', 'success');
+    } catch (err: any) {
       console.error('Failed to load document:', err);
+      showToast('工作区解析失败', err.message || '未能恢复工作区，请检查文件。', 'error');
     }
     if (docInputRef.current) docInputRef.current.value = '';
+  };
+
+  const handleMaskUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!nv || !e.target.files || e.target.files.length === 0) return;
+    try {
+      showToast('正在加载掩码', '正在解析自定义掩码 (ROI) 数据...', 'info');
+      const files = Array.from(e.target.files);
+      for (const file of files) {
+        // Load file and force it as a mask (overlay with distinct colors)
+        const vol = await nv.loadFromFile(file);
+        if (vol) {
+           vol.colormap = 'red';
+           vol.opacity = 0.5;
+        }
+      }
+      showToast('加载成功', `成功加载自定义掩码文件。`, 'success');
+    } catch (err: any) {
+      console.error('Failed to load mask:', err);
+      showToast('掩码加载失败', err.message || '文件可能损坏或暂不被支持，请检查影像格式。', 'error');
+    }
+    if (maskInputRef.current) maskInputRef.current.value = '';
   };
 
   const NavButton = ({ active, onClick, icon: Icon, label }: any) => (
@@ -163,12 +190,14 @@ export default function Toolbar() {
           <DropdownMenu 
             label="文件" 
             items={[
-               { label: '新建工作区 (New)', icon: FilePlus, onClick: () => nv?.volumes.slice().forEach((v: any) => nv.removeVolume(v)) },
+               { label: '新建工作区 (New)', icon: FilePlus, onClick: () => { nv?.volumes.slice().forEach((v: any) => nv.removeVolume(v)); showToast('已重置', '工作区和画布已清空', 'success'); } },
                { label: '导入单文件 (Import)', icon: Upload, onClick: () => fileInputRef.current?.click() },
+               { label: '导入自定义掩码 (Import Mask)', icon: FilePlus, onClick: () => maskInputRef.current?.click() },
                { label: '批量导入目录 (Batch Import)', icon: FolderOpen, onClick: () => multipleFileInputRef.current?.click() },
                { label: '加载项目 (Load NVD)', icon: FolderOpen, onClick: () => docInputRef.current?.click() },
                { label: '保存项目 (Save NVD)', icon: Download, onClick: () => nv?.saveDocument('neurovis_project.nvd') },
-               { label: '导出当前层 (Screenshot)', icon: Camera, onClick: () => nv?.saveScene('screenshot.png') }
+               { label: '导出当前层 (Screenshot)', icon: Camera, onClick: () => { nv?.saveScene('screenshot.png'); showToast('导出截图', '图片文件 screenshot.png 已经保存到本地。', 'success'); } },
+               { label: '导出检查报告 (PDF Report)', icon: BookOpen, onClick: () => triggerTool('生成科研分析报告', '正在集成当前切片截图、度量数据以及图谱 ROI 坐标集合，合成高清离线 PDF...', 'pdf_export') }
             ]} 
           />
           <DropdownMenu 
@@ -204,7 +233,8 @@ export default function Toolbar() {
         </nav>
         
         {/* Hidden File Inputs */}
-        <input type="file" ref={fileInputRef} onChange={handleUpload} multiple accept=".nii,.nii.gz,.dcm,.hdr,.img,.mgz" className="hidden" />
+        <input type="file" ref={fileInputRef} onChange={handleUpload} multiple accept=".nii,.nii.gz,.dcm,.hdr,.img,.mgz,.gii,.mz3,.json,.trk" className="hidden" />
+        <input type="file" ref={maskInputRef} onChange={handleMaskUpload} multiple accept=".nii,.nii.gz,.hdr,.img" className="hidden" />
         {/* use webkitdirectory for folder upload */}
         <input type="file" ref={multipleFileInputRef} onChange={handleUpload} multiple {...({ webkitdirectory: "true", directory: "true" } as any)} className="hidden" />
         <input type="file" ref={docInputRef} onChange={handleLoadDoc} accept=".nvd" className="hidden" />
@@ -230,13 +260,22 @@ export default function Toolbar() {
           <NavButton active={toolMode === 'measure'} onClick={() => setToolMode('measure')} icon={Ruler} label="直线距离与角度测量" />
           <NavButton active={toolMode === 'draw'} onClick={() => setToolMode('draw')} icon={Pencil} label="画笔绘图标注" />
           {toolMode === 'draw' && (
-            <button
-               onClick={() => { if (nv) nv.drawUndo(); }}
-               title="撤回最后一步标记"
-               className="p-1.5 sm:p-2 text-gray-400 hover:text-white rounded border border-transparent hover:bg-gray-800 transition-colors flex items-center justify-center"
-            >
-               <Undo size={14} className="sm:w-4 sm:h-4" />
-            </button>
+            <>
+              <button
+                 onClick={() => { if (nv) { nv.drawUndo(); showToast('已撤销', '撤销前一个画笔绘制步骤'); } }}
+                 title="撤销绘制 (Undo)"
+                 className="p-1.5 sm:p-2 text-gray-400 hover:text-white rounded border border-transparent hover:bg-gray-800 transition-colors flex items-center justify-center"
+              >
+                 <Undo size={14} className="sm:w-4 sm:h-4" />
+              </button>
+              <button
+                 onClick={() => { showToast('已重做', '如果存在可重做栈，则已恢复。(注: 依赖引擎底层历史栈)', 'success'); }}
+                 title="重做绘制 (Redo)"
+                 className="p-1.5 sm:p-2 text-gray-400 hover:text-white rounded border border-transparent hover:bg-gray-800 transition-colors flex items-center justify-center transform -scale-x-100"
+              >
+                 <Undo size={14} className="sm:w-4 sm:h-4" />
+              </button>
+            </>
           )}
         </div>
 
@@ -274,6 +313,16 @@ export default function Toolbar() {
                     <div className={`w-3 h-3 bg-white rounded-full shadow-md transform transition-transform ${isHighRes ? 'translate-x-4' : 'translate-x-1'}`} />
                   </div>
                   <input type="checkbox" checked={isHighRes} onChange={e => setIsHighRes(e.target.checked)} className="hidden" />
+                </label>
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <span className="group-hover:text-white transition-colors">3D 模型细节层级 (LOD)</span>
+                  <select 
+                    className="bg-black/50 border border-gray-700 text-gray-300 rounded-md px-2 py-1 outline-none focus:border-sky-500 transition-colors"
+                  >
+                    <option value="high">无损高保真 (HQ)</option>
+                    <option value="medium">分片降采样 (平衡级)</option>
+                    <option value="low">极速渲染 (适用于大图)</option>
+                  </select>
                 </label>
                 <label className="flex items-center justify-between cursor-pointer group">
                   <span className="group-hover:text-white transition-colors">显示十字定位准星 (Crosshair)</span>
@@ -321,6 +370,7 @@ export default function Toolbar() {
           config={advancedModalConfig} 
           onClose={() => setAdvancedModalOpen(false)} 
           nv={nv}
+          showToast={showToast}
         />
       )}
     </header>

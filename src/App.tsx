@@ -8,6 +8,7 @@ import Toolbar from './components/Toolbar';
 import Sidebar from './components/Sidebar';
 import NiivueCanvas from './components/NiivueCanvas';
 import TeachingPanel from './components/TeachingPanel';
+import ToastContainer from './components/Toast';
 
 function InnerApp() {
   const { showTeachingPanel, setShowTeachingPanel } = useViewer();
@@ -15,6 +16,7 @@ function InnerApp() {
   return (
     <div className="flex flex-col h-screen w-screen bg-gray-950 text-[#E2E8F0] font-sans overflow-hidden">
       <Toolbar />
+      <ToastContainer />
       <main className="flex flex-row flex-1 overflow-hidden relative">
         <section className="flex-1 shrink flex bg-gray-900 p-1 relative">
           <div className="flex-1 w-full h-full pane-border bg-black relative">

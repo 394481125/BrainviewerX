@@ -19,6 +19,9 @@ interface ViewerContextType {
   setHoverText: (text: string) => void;
   showTeachingPanel: boolean;
   setShowTeachingPanel: (show: boolean) => void;
+  toastMsg: { title: string, description: string, type?: 'info'|'error'|'success', id: number } | null;
+  setToastMsg: (msg: { title: string, description: string, type?: 'info'|'error'|'success', id: number } | null) => void;
+  showToast: (title: string, description: string, type?: 'info'|'error'|'success') => void;
 }
 
 const ViewerContext = createContext<ViewerContextType | undefined>(undefined);
@@ -31,6 +34,16 @@ export function ViewerProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hoverText, setHoverText] = useState("");
   const [showTeachingPanel, setShowTeachingPanel] = useState(false);
+  const [toastMsg, setToastMsg] = useState<{ title: string, description: string, type?: 'info'|'error'|'success', id: number } | null>(null);
+
+  const showToast = (title: string, description: string, type: 'info'|'error'|'success' = 'info') => {
+    const id = Date.now();
+    setToastMsg({ title, description, type, id });
+    setTimeout(() => {
+      setToastMsg((prev) => (prev?.id === id ? null : prev));
+    }, 4000);
+  };
+
   const [clipPlane, setClipPlane] = useState<ClipPlaneConfig>({
     mode: 'none',
     depth: 1, // typically 1 to 2? or 0 to 2? We'll test with 0 to 2.
@@ -47,7 +60,8 @@ export function ViewerProvider({ children }: { children: ReactNode }) {
       isLoaded, setIsLoaded,
       clipPlane, setClipPlane,
       hoverText, setHoverText,
-      showTeachingPanel, setShowTeachingPanel
+      showTeachingPanel, setShowTeachingPanel,
+      toastMsg, setToastMsg, showToast
     }}>
       {children}
     </ViewerContext.Provider>

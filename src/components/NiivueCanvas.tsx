@@ -18,13 +18,44 @@ export default function NiivueCanvas() {
       isColorbar: true,
       show3Dcrosshair: true,
       clipPlaneColor: [1, 1, 1, 0.5],
+      isClipAllVolumes: true,
+      isClipPlanesCutaway: true,
     });
 
     // attachTo accepts the ID of the canvas
     nvInstance.attachTo('gl1');
     
     nvInstance.onLocationChange = (data: any) => {
-      setHoverText(data.string);
+      let rawString = data.string || "";
+      const match = rawString.match(/=([\-\d\.]+)/);
+      if (match && rawString.toLowerCase().includes('fs_seg')) {
+        const val = parseInt(match[1]);
+        const dict: Record<number, string> = {
+          2: "左半球: 大脑白质 (Left Cerebral White Matter)",
+          3: "左半球: 大脑皮层 (Left Cerebral Cortex)",
+          4: "左半球: 侧脑室 (Left Lateral Ventricle)",
+          10: "左半球: 丘脑 (Left Thalamus, Tha)",
+          11: "左半球: 尾状核 (Left Caudate, Cau)",
+          12: "左半球: 壳核 (Left Putamen, Put)",
+          13: "左半球: 苍白球 (Left Pallidum, Pal)",
+          17: "左半球: 海马 (Left Hippocampus, Hip)",
+          18: "左半球: 杏仁核 (Left Amygdala, Amy)",
+          41: "右半球: 大脑白质 (Right Cerebral White Matter)",
+          42: "右半球: 大脑皮层 (Right Cerebral Cortex)",
+          43: "右半球: 侧脑室 (Right Lateral Ventricle)",
+          49: "右半球: 丘脑 (Right Thalamus, Tha)",
+          50: "右半球: 尾状核 (Right Caudate, Cau)",
+          51: "右半球: 壳核 (Right Putamen, Put)",
+          52: "右半球: 苍白球 (Right Pallidum, Pal)",
+          53: "右半球: 海马 (Right Hippocampus, Hip)",
+          54: "右半球: 杏仁核 (Right Amygdala, Amy)",
+        };
+        const desc = dict[val];
+        if (desc) {
+          rawString += ` -> ${desc}`;
+        }
+      }
+      setHoverText(rawString);
     };
     
     // Listen for image loads to update layers panel
@@ -135,6 +166,13 @@ export default function NiivueCanvas() {
   // Apply Clip plane
   useEffect(() => {
     if (!nv) return;
+    
+    // Explicitly enforce that clipping affects all volumes and cuts away
+    if (nv.opts) {
+      nv.opts.isClipAllVolumes = true;
+      nv.opts.isClipPlanesCutaway = true;
+    }
+
     // ensure clip planes are enabled or disabled correctly.
     if (clipPlane.mode === 'none') {
       // disable clip planes

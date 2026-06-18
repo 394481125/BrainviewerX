@@ -69,11 +69,11 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                     </ul>
                   </div>
                   <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-                    <h3 className="text-sky-400 font-bold mb-2">ROI 量化导出</h3>
+                    <h3 className="text-sky-400 font-bold mb-2">ROI 量化分析与查询</h3>
                     <ul className="list-disc list-inside text-xs text-gray-400 space-y-2">
                       <li>系统自动在底层通过 WebAssembly 提取每个图谱区域。</li>
-                      <li>针对底层功能像序列（fMRI/PET），可自动计算对应 ROI 区间内的平均信号、标准差极值。</li>
-                      <li>一键式导出为 CSV 纯文本文件，立刻介入 SPSS、Python 统计流程。</li>
+                      <li>支持实时查看不同层级和横截面的高维重构与量化。</li>
+                      <li>本面板已完整展示上述图谱的所有区域定义，无需额外查询或导出。</li>
                     </ul>
                   </div>
                 </div>
@@ -103,40 +103,80 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
 
             {activeTab === 'aal' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                <h1 className="text-2xl font-bold text-white mb-2 pb-4 border-b border-gray-800">Automated Anatomical Labeling (AAL)</h1>
+                <h1 className="text-2xl font-bold text-white mb-2 pb-4 border-b border-gray-800">Automated Anatomical Labeling (AAL / AAL3)</h1>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  AAL 模板最初由 Tzourio-Mazoyer (2002) 构建，是目前全球引用次数最高的神经影像宏观解剖学分图谱。它根据 MNI 单被试（柯林斯脑）的解剖特征划分为最初的 90 个脑区（排除小脑）或 116 个区域（含小脑）。
+                  AAL 模板最初由 Tzourio-Mazoyer (2002) 构建，是目前全球引用次数最高的神经影像宏观解剖学分图谱。它根据 MNI 单被试（柯林斯脑）的解剖特征划分为最初的 90 个脑区（排除小脑）或 116 个区域（含小脑）。最新的 AAL3 补充了极具科研价值的细分核团与亚区。
                 </p>
                 <div className="bg-black border border-gray-800 rounded-lg p-4">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">区域分类及常见释义表 (局部预览)</h4>
-                  <table className="w-full text-xs text-left">
-                    <thead>
-                      <tr className="text-gray-500 border-b border-gray-800">
-                        <th className="pb-2">区域 ID</th>
-                        <th className="pb-2">英文简写</th>
-                        <th className="pb-2">中文对应标准名称</th>
-                        <th className="pb-2">大致功能定位</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-300">
-                      <tr className="border-b border-gray-900 hover:bg-gray-900 transition-colors">
-                        <td className="py-2">1, 2</td><td className="font-mono text-sky-400">Precentral_L / R</td><td>中央前回</td><td className="text-gray-500">初级运动皮层，控制对侧随意运动。</td>
-                      </tr>
-                      <tr className="border-b border-gray-900 hover:bg-gray-900 transition-colors">
-                        <td className="py-2">11, 12</td><td className="font-mono text-sky-400">Frontal_Inf_Oper_L / R</td><td>额下回岛盖部</td><td className="text-gray-500">左侧对应 Broca 运动性语言中枢。</td>
-                      </tr>
-                      <tr className="border-b border-gray-900 hover:bg-gray-900 transition-colors">
-                        <td className="py-2">37, 38</td><td className="font-mono text-sky-400">Hippocampus_L / R</td><td>海马体</td><td className="text-gray-500">长期记忆巩固与情景记忆提取，AD重点病变区。</td>
-                      </tr>
-                      <tr className="border-b border-gray-900 hover:bg-gray-900 transition-colors">
-                        <td className="py-2">41, 42</td><td className="font-mono text-sky-400">Amygdala_L / R</td><td>杏仁核</td><td className="text-gray-500">情绪加工、恐惧评估与奖赏学习网络核心。</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div className="mt-4 text-center">
-                    <button className="text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-1.5 rounded transition-colors">
-                      本地全量导出完整对照 CSV (含 166 个脑区)
-                    </button>
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">AAL / AAL3 完整分区体系 (涵盖 166+ 脑区分类)</h4>
+                  <div className="max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                    <table className="w-full text-[11px] text-left">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
+                          <th className="pb-2 w-16">区域 ID</th>
+                          <th className="pb-2 w-48">英文简写</th>
+                          <th className="pb-2 w-32">中文对应标准名称</th>
+                          <th className="pb-2">大致功能定位</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-300">
+                        {/* 额叶 */}
+                        <tr className="bg-gray-900/50"><td colSpan={4} className="py-1 font-bold text-sky-500">额叶皮层 (Frontal Lobe)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1, 2</td><td className="font-mono text-sky-400">Precentral_L/R</td><td>中央前回</td><td className="text-gray-500">初级运动皮层</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">3, 4, 19, 20</td><td className="font-mono text-sky-400">Frontal_Sup_L/R/Medial</td><td>额上回(含内侧)</td><td className="text-gray-500">运动规划、高级认知</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">7, 8</td><td className="font-mono text-sky-400">Frontal_Mid_L/R</td><td>额中回</td><td className="text-gray-500">背外侧前额叶核心(dlPFC)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">11-16</td><td className="font-mono text-sky-400">Frontal_Inf (Oper/Tri/Orb)</td><td>额下回(盖/三角/眶)</td><td className="text-gray-500">Broca语言区及情绪调节</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">17, 18, 21-26</td><td className="font-mono text-sky-400">Olf / Rectus / Orbital</td><td>嗅皮层/直回/眶回</td><td className="text-gray-500">初级嗅觉与眶额抑制反馈</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">67, 68</td><td className="font-mono text-sky-400">Paracentral_Lobule_L/R</td><td>旁中央小叶</td><td className="text-gray-500">下肢运动与排泄控制</td></tr>
+
+                        {/* 顶叶 */}
+                        <tr className="bg-gray-900/50"><td colSpan={4} className="py-1 font-bold text-sky-500">顶叶皮层 (Parietal Lobe)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">57, 58</td><td className="font-mono text-sky-400">Postcentral_L/R</td><td>中央后回</td><td className="text-gray-500">初级躯体感觉皮层</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">59, 60</td><td className="font-mono text-sky-400">Parietal_Sup_L/R</td><td>顶上小叶</td><td className="text-gray-500">视觉运动协调追踪</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">61, 62</td><td className="font-mono text-sky-400">Parietal_Inf_L/R</td><td>顶下小叶</td><td className="text-gray-500">多感觉跨模态联合加工</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">63, 64</td><td className="font-mono text-sky-400">SupraMarginal_L/R</td><td>缘上回</td><td className="text-gray-500">语音工作记忆核心</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">65, 66</td><td className="font-mono text-sky-400">Angular_L/R</td><td>角回</td><td className="text-gray-500">计算、阅读与跨感官转换</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">67, 68</td><td className="font-mono text-sky-400">Precuneus_L/R</td><td>楔前叶</td><td className="text-gray-500">默认网络系统核心</td></tr>
+
+                        {/* 颞叶 */}
+                        <tr className="bg-gray-900/50"><td colSpan={4} className="py-1 font-bold text-sky-500">颞叶皮层 (Temporal Lobe)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">79-82</td><td className="font-mono text-sky-400">Temporal_Sup_L/R (Pole)</td><td>颞上回(含极)</td><td className="text-gray-500">听觉与Wernicke语言区</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">83-86</td><td className="font-mono text-sky-400">Temporal_Mid_L/R (Pole)</td><td>颞中回(含极)</td><td className="text-gray-500">语义表征与网络</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">87, 88</td><td className="font-mono text-sky-400">Temporal_Inf_L/R</td><td>颞下回</td><td className="text-gray-500">视觉物体识别腹侧通路</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">79, 80</td><td className="font-mono text-sky-400">Heschl_L/R</td><td>颞横回</td><td className="text-gray-500">初级听觉皮层</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">53, 54</td><td className="font-mono text-sky-400">Fusiform_L/R</td><td>梭状回</td><td className="text-gray-500">面孔和视觉词汇识别</td></tr>
+
+                        {/* 枕叶 */}
+                        <tr className="bg-gray-900/50"><td colSpan={4} className="py-1 font-bold text-sky-500">枕叶皮层 (Occipital Lobe)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">43, 44</td><td className="font-mono text-sky-400">Calcarine_L/R</td><td>距状沟周皮层</td><td className="text-gray-500">初级视觉皮层</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">45, 46</td><td className="font-mono text-sky-400">Cuneus_L/R</td><td>楔叶</td><td className="text-gray-500">初级视觉上视场</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">47, 48</td><td className="font-mono text-sky-400">Lingual_L/R</td><td>舌回</td><td className="text-gray-500">视觉辅助与字母识别</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">49-52</td><td className="font-mono text-sky-400">Occipital_Sup/Mid/Inf</td><td>枕上/中/下回</td><td className="text-gray-500">视觉联合皮层</td></tr>
+
+                        {/* 边缘系统及大脑深部 */}
+                        <tr className="bg-gray-900/50"><td colSpan={4} className="py-1 font-bold text-sky-500">边缘系统与基底核 (Limbic & Basal Ganglia)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">27, 28</td><td className="font-mono text-sky-400">Insula_L/R</td><td>岛叶</td><td className="text-gray-500">内感受、共情觉痛痛</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">29-34</td><td className="font-mono text-sky-400">Cingulum_Ant/Mid/Post</td><td>前/中/后扣带回</td><td className="text-gray-500">冲突调节/感觉驱动/DMN</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">35, 36</td><td className="font-mono text-sky-400">Hippocampus_L/R</td><td>海马体</td><td className="text-gray-500">长期情景记忆</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">37, 38</td><td className="font-mono text-sky-400">ParaHippocampal_L/R</td><td>海马旁回</td><td className="text-gray-500">环境视觉记忆整合</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">39, 40</td><td className="font-mono text-sky-400">Amygdala_L/R</td><td>杏仁核</td><td className="text-gray-500">恐惧与威胁加工</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">71, 72</td><td className="font-mono text-sky-400">Caudate_L/R</td><td>尾状核</td><td className="text-gray-500">运动学习与动作抑制</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">73, 74</td><td className="font-mono text-sky-400">Putamen_L/R</td><td>壳核</td><td className="text-gray-500">复杂运动协调</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">75, 76</td><td className="font-mono text-sky-400">Pallidum_L/R</td><td>苍白球</td><td className="text-gray-500">基底节输出控制</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">77, 78</td><td className="font-mono text-sky-400">Thalamus_L/R</td><td>丘脑总区</td><td className="text-gray-500">上行网状激活与感觉中继</td></tr>
+
+                        {/* AAL3 补充核团 */}
+                        <tr className="bg-gray-900/50"><td colSpan={4} className="py-1 font-bold text-sky-500">AAL3 新增深部核团与小脑 (AAL3 Specific Additions)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">121-144</td><td className="font-mono text-sky-400">Thalamus_subnuclei</td><td>丘脑各精细亚核团</td><td className="text-gray-500">AV, LP, VA, VL, VPL, MD等细分功能对应</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">145-148</td><td className="font-mono text-sky-400">Locus_Coeruleus / Raphe</td><td>蓝斑 / 中缝核</td><td className="text-gray-500">去甲肾上腺素 / 5-HT 核心源区</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">149-152</td><td className="font-mono text-sky-400">VTA / Subst_Nigra</td><td>中脑腹侧被盖区/黑质</td><td className="text-gray-500">多巴胺奖赏回路与帕金森病变区</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">153-156</td><td className="font-mono text-sky-400">Red_Nuc / Subthalamic</td><td>红核 / 丘脑底核</td><td className="text-gray-500">锥体外系运动及DBS常选靶点</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">157-160</td><td className="font-mono text-sky-400">Hypothal / Mammillary</td><td>下丘脑 / 乳头体</td><td className="text-gray-500">内分泌调控中枢与记忆回路转移站</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">161-164</td><td className="font-mono text-sky-400">Septal / NAc</td><td>隔核 / 伏隔核(核/壳)</td><td className="text-gray-500">边缘系统快感惩罚反馈</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">165-170</td><td className="font-mono text-sky-400">Tubercle / BNST / Habenula / Claustrum</td><td>终纹床核/缰核/屏状核</td><td className="text-gray-500">应激情绪、抑郁关联与全脑意识同步</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">89-120</td><td className="font-mono text-sky-400">Cerebellum 1-10 & Vermis</td><td>小脑各叶与蚓部</td><td className="text-gray-500">共济运动与平衡/平滑追随眼动</td></tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -149,21 +189,65 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                   基于 FreeSurfer 默认皮层分割流程生成的经典骨架，包含 68 个皮层解剖区域（左右半球各 34 个区域）。它是神经影像形态学研究中极具代表性的模板，专用于皮层厚度、表面积、灰质容积的自动化提取与测量。
                 </p>
                 <div className="bg-black border border-gray-800 rounded-lg p-4">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">DK 模板典型脑区及关联功能</h4>
-                  <table className="w-full text-xs text-left">
-                    <thead>
-                       <tr className="text-gray-500 border-b border-gray-800">
-                          <th className="pb-2">区域 ID (L/R)</th><th className="pb-2">标准名称</th><th className="pb-2">对应重要脑区与功能</th>
-                       </tr>
-                    </thead>
-                    <tbody className="text-gray-300">
-                       <tr className="border-b border-gray-900"><td className="py-2">1012, 2012</td><td className="font-mono text-sky-400">LateralOrbitofrontal</td><td>外侧眶额皮层，涉及奖赏评估机制与高级决策。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">1014, 2014</td><td className="font-mono text-sky-400">MedialOrbitofrontal</td><td>内侧眶额皮层，自我指涉与情绪调节核心网络。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">1024, 2024</td><td className="font-mono text-sky-400">Precentral</td><td>中央前回（初级运动皮层 M1），精细运动输出。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">1022, 2022</td><td className="font-mono text-sky-400">Postcentral</td><td>中央后回（初级体感皮层 S1），所有外周感觉输入。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">1028, 2028</td><td className="font-mono text-sky-400">SuperiorFrontal</td><td>额上回，负责持续注意力分配、工作记忆与认知控制。</td></tr>
-                    </tbody>
-                  </table>
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">DK 图谱完整分区体系 (68 个皮层解剖区域)</h4>
+                  <div className="max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                    <table className="w-full text-[11px] text-left mb-6">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
+                          <th className="pb-2 w-20">区域 ID</th>
+                          <th className="pb-2 w-48">标准名称</th>
+                          <th className="pb-2">对应重要脑区与功能</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-300">
+                        {/* 额叶 */}
+                        <tr className="bg-gray-900/50"><td colSpan={3} className="py-1 font-bold text-sky-500">额叶 (Frontal Lobe)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1028, 2028</td><td className="font-mono text-sky-400">superiorfrontal</td><td>额上回，负责持续注意力分配、工作记忆与认知控制。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1027, 2027</td><td className="font-mono text-sky-400">rostralmiddlefrontal</td><td>吻侧额中回，高级执行功能。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1003, 2003</td><td className="font-mono text-sky-400">caudalmiddlefrontal</td><td>尾侧额中回，眼动控制及空间记忆。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1018, 2018</td><td className="font-mono text-sky-400">parsopercularis</td><td>额下回盖部，Broca区的一部分。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1020, 2020</td><td className="font-mono text-sky-400">parstriangularis</td><td>额下回三角部，Broca区的一部分，语义理解。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1019, 2019</td><td className="font-mono text-sky-400">parsorbitalis</td><td>额下回眶部，情绪处理。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1012, 2012</td><td className="font-mono text-sky-400">lateralorbitofrontal</td><td>外侧眶额皮层，涉及奖赏评估机制与高级决策。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1014, 2014</td><td className="font-mono text-sky-400">medialorbitofrontal</td><td>内侧眶额皮层，自我指涉与情绪调节核心网络。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1024, 2024</td><td className="font-mono text-sky-400">precentral</td><td>中央前回（初级运动皮层 M1），精细运动输出。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1017, 2017</td><td className="font-mono text-sky-400">paracentral</td><td>旁中央小叶，下肢运动控制及感觉。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1032, 2032</td><td className="font-mono text-sky-400">frontalpole</td><td>极前额叶皮层，最高级目标规划。</td></tr>
+
+                        {/* 顶叶 */}
+                        <tr className="bg-gray-900/50"><td colSpan={3} className="py-1 font-bold text-sky-500">顶叶 (Parietal Lobe)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1022, 2022</td><td className="font-mono text-sky-400">postcentral</td><td>中央后回（初级体感皮层 S1），所有外周感觉输入。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1029, 2029</td><td className="font-mono text-sky-400">supramarginal</td><td>缘上回，语言回路及语音加工储存库。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1008, 2008</td><td className="font-mono text-sky-400">inferiorparietal</td><td>顶下小叶，空间感知及数字加工。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1028, 2028</td><td className="font-mono text-sky-400">superiorparietal</td><td>顶上小叶，躯体感觉信息高级整合。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1025, 2025</td><td className="font-mono text-sky-400">precuneus</td><td>楔前叶，情景记忆检索与意象。</td></tr>
+
+                        {/* 颞叶 */}
+                        <tr className="bg-gray-900/50"><td colSpan={3} className="py-1 font-bold text-sky-500">颞叶 (Temporal Lobe)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1030, 2030</td><td className="font-mono text-sky-400">superiortemporal</td><td>颞上回，高级听觉区域与语音识别。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1015, 2015</td><td className="font-mono text-sky-400">middletemporal</td><td>颞中回，视觉及听觉跨模态整合，语义网络。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1009, 2009</td><td className="font-mono text-sky-400">inferiortemporal</td><td>颞下回，高级视觉形态处理。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1033, 2033</td><td className="font-mono text-sky-400">transversetemporal</td><td>颞横回，即初级听觉中枢皮层区。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1001, 2001</td><td className="font-mono text-sky-400">bankssts</td><td>颞上沟后岸区。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1007, 2007</td><td className="font-mono text-sky-400">fusiform</td><td>梭状回，包括面孔识别区 (FFA)。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1006, 2006</td><td className="font-mono text-sky-400">entorhinal</td><td>内嗅皮层，海马体的门控接口，AD最早期原发区。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1016, 2016</td><td className="font-mono text-sky-400">parahippocampal</td><td>海马旁回，主要处理场所视觉与记忆映射。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1034, 2034</td><td className="font-mono text-sky-400">temporalpole</td><td>极颞叶皮层，社交情感与高度语义总结。</td></tr>
+
+                        {/* 枕叶及边缘扣带 */}
+                        <tr className="bg-gray-900/50"><td colSpan={3} className="py-1 font-bold text-sky-500">枕叶及扣带皮层 (Occipital & Cingulate)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1026, 2026</td><td className="font-mono text-sky-400">rostralanteriorcingulate</td><td>吻侧前扣带回，情绪调节及冲突解决监控。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1002, 2002</td><td className="font-mono text-sky-400">caudalanteriorcingulate</td><td>尾侧前扣带回。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1023, 2023</td><td className="font-mono text-sky-400">posteriorcingulate</td><td>后扣带回，DMN核心节点，调控认知内向关注。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1010, 2010</td><td className="font-mono text-sky-400">isthmuscingulate</td><td>扣带回峡部。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1011, 2011</td><td className="font-mono text-sky-400">lateraloccipital</td><td>外侧枕叶皮层，形状感知及高级视觉处理。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1013, 2013</td><td className="font-mono text-sky-400">lingual</td><td>舌回，视觉词形区域边缘及低级视觉处理。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1005, 2005</td><td className="font-mono text-sky-400">cuneus</td><td>楔叶，视觉初级映射(上半侧视野)。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1021, 2021</td><td className="font-mono text-sky-400">pericalcarine</td><td>距状沟周皮层，初级视觉输入核心带。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">1035, 2035</td><td className="font-mono text-sky-400">insula</td><td>岛叶皮层，疼痛及内感受网络的核心枢纽。</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -172,25 +256,44 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
                 <h1 className="text-2xl font-bold text-white mb-2 pb-4 border-b border-gray-800">Harvard-Oxford (HO) 图谱</h1>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  由哈佛麻省总医院与牛津大学联合发布，是 FSL (FMRIB Software Library) 的主要默认图谱。其最著名的特性是出色的<strong className="text-white">边缘系统及皮下深部核团划分</strong>，在深部脑刺激（DBS）以及神经系统退行性疾病的研究中非常关键。
+                  由哈佛麻省总医院与牛津大学联合发布，是 FSL (FMRIB Software Library) 的主要默认图谱。其包含完整的皮层与皮下核团概率图谱。最著名的特性是其极其出色的<strong className="text-white">边缘系统及皮下深部核团划分</strong>，在深部脑刺激（DBS）以及神经系统退行性疾病的研究中非常关键。
                 </p>
                 <div className="bg-black border border-gray-800 rounded-lg p-4">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">HO 核心皮下核团分区表</h4>
-                  <table className="w-full text-xs text-left">
-                    <thead>
-                       <tr className="text-gray-500 border-b border-gray-800">
-                          <th className="pb-2">区域名称</th><th className="pb-2">标准缩写</th><th className="pb-2">核心作用与临床意义</th>
-                       </tr>
-                    </thead>
-                    <tbody className="text-gray-300">
-                       <tr className="border-b border-gray-900"><td className="py-2">Thalamus</td><td className="font-mono text-sky-400">Tha</td><td>丘脑：全脑感觉运动信息的超级中继站与滤波网。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">Caudate</td><td className="font-mono text-sky-400">Cau</td><td>尾状核：基底神经节首端，多巴胺相关运动与习惯控制。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">Putamen</td><td className="font-mono text-sky-400">Put</td><td>壳核：运动学习与执行模块，帕金森病（PD）关键受损区。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">Pallidum</td><td className="font-mono text-sky-400">Pal</td><td>苍白球：抑制性运动控制，调节运动网络兴奋性。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">Hippocampus</td><td className="font-mono text-sky-400">Hip</td><td>海马体：陈述性记忆固化、空间导航，AD核心标志性萎缩区。</td></tr>
-                       <tr className="border-b border-gray-900"><td className="py-2">Amygdala</td><td className="font-mono text-sky-400">Amy</td><td>杏仁核：恐惧、焦虑情绪处理中心与威胁感知评价网络。</td></tr>
-                    </tbody>
-                  </table>
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">HO 全套深部核团与皮层精细概率分布</h4>
+                  <div className="max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                    <table className="w-full text-[11px] text-left mb-6">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
+                          <th className="pb-2 w-28">区域名称</th>
+                          <th className="pb-2 w-20">标准缩写</th>
+                          <th className="pb-2">核心作用与临床意义</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-300">
+                        {/* 皮下深部核团区 */}
+                        <tr className="bg-gray-900/50"><td colSpan={3} className="py-1 font-bold text-sky-500">边缘与皮下深部核团 (Subcortical Nuclei)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Thalamus</td><td className="font-mono text-sky-400">Tha</td><td>丘脑：全脑感觉运动信息的超级中继站与滤波网。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Caudate</td><td className="font-mono text-sky-400">Cau</td><td>尾状核：基底神经节首端，多巴胺相关运动与习惯控制。纹状体的重要组成。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Putamen</td><td className="font-mono text-sky-400">Put</td><td>壳核：持续运动学习与执行模块，帕金森病（PD）关键受损区。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Pallidum</td><td className="font-mono text-sky-400">Pal</td><td>苍白球：抑制性运动控制，调节运动网络兴奋性。DBS 常见靶点。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Hippocampus</td><td className="font-mono text-sky-400">Hip</td><td>海马体：陈述性记忆固化、空间导航，AD核心标志性萎缩区。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Amygdala</td><td className="font-mono text-sky-400">Amy</td><td>杏仁核：恐惧、焦虑情绪处理中心与威胁感知评价网络。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Accumbens</td><td className="font-mono text-sky-400">Acc</td><td>伏隔核：大脑奖赏回馈与成瘾网络的核心部位。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Brain-Stem</td><td className="font-mono text-sky-400">BS</td><td>脑干：维持基本生命体征（呼吸、心跳、觉醒状态）。</td></tr>
+
+                        {/* 皮层概率区 */}
+                        <tr className="bg-gray-900/50"><td colSpan={3} className="py-1 font-bold text-sky-500">代表性皮层概率分区 (Selected Cortical Areas)</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Frontal Pole</td><td className="font-mono text-sky-400">FP</td><td>位于前额叶极前端区域，负责顶层未来规划。HO的概率图能很好地涵盖群体差异极大的极区。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Insular Cortex</td><td className="font-mono text-sky-400">IC</td><td>岛叶被高度精确地划分为多个子概率区，便于探讨内部情绪及自我觉察。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Cingulate Gyrus (Ant/Post)</td><td className="font-mono text-sky-400">CG</td><td>前扣带回和后扣带回有明确分离，对于静息态网络 (如 DMN 及突显网络) 有极高匹配度。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Paracingulate Gyrus</td><td className="font-mono text-sky-400">PCG</td><td>旁扣带回，社会认知网络的重要组成。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Subcallosal Cortex</td><td className="font-mono text-sky-400">SC</td><td>胼胝体下皮质，与重度抑郁症(MDD)治疗高度关联靶区。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Temporal Fusiform Cort</td><td className="font-mono text-sky-400">TFC</td><td>分为前/后/枕侧极，极为细致的面容与复杂图型加工模型带。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Planum Temporale/Polare</td><td className="font-mono text-sky-400">PT/PP</td><td>听觉处理高阶辅助，存在显著的左右半球不对称。</td></tr>
+                        <tr className="border-b border-gray-900"><td className="py-1.5">Juxtapositional Lobule Cortex</td><td className="font-mono text-sky-400">SMA</td><td>即过去的辅助运动区(SMA)，主要控制多重动作的衔接。</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -201,29 +304,47 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                 <p className="text-gray-400 text-sm leading-relaxed">
                    布罗德曼分区法是大脑皮层最经典的细胞构筑学分区标准。通过尼氏染色显微技术，Korbinian Brodmann 观察了皮层神经元的细胞层级排列差异，进而划分了 BA1 到 BA52 的各个功能小单元。该图谱至今在临床功能定位上依然拥有崇高地位。
                 </p>
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="bg-gray-900 border border-gray-800 rounded p-4 text-xs space-y-2">
-                      <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800">运动与体感系统</h4>
-                      <p><strong className="text-white">BA 4:</strong> 初级运动皮层 (M1)，控制对侧躯体随意与精细运动。</p>
-                      <p><strong className="text-white">BA 6:</strong> 前运动区与 SMA，负责复杂动作的序列规划与准备。</p>
-                      <p><strong className="text-white">BA 1,2,3:</strong> 初级躯体感觉皮层 (S1)，处理触压觉、本体感觉。</p>
-                   </div>
-                   <div className="bg-gray-900 border border-gray-800 rounded p-4 text-xs space-y-2">
-                      <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800">视觉与听觉中枢</h4>
-                      <p><strong className="text-white">BA 17:</strong> 初级视觉皮层 (V1)，位于枕叶距状沟，接收视网膜初级映射。</p>
-                      <p><strong className="text-white">BA 18,19:</strong> 面与运动视觉联合皮层 (V2/V3/V4/V5)，特征提取网络。</p>
-                      <p><strong className="text-white">BA 41,42:</strong> 初级听觉皮层与联合皮层，位于颞横回深部。</p>
-                   </div>
-                   <div className="bg-gray-900 border border-gray-800 rounded p-4 text-xs space-y-2">
-                      <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800">语言与语义网络</h4>
-                      <p><strong className="text-white">BA 44,45:</strong> Broca区 (运动性语言中枢)，损伤将导致表达性失语症。</p>
-                      <p><strong className="text-white">BA 22:</strong> Wernicke区 (听觉性语言中枢)，损伤将导致感受性/胡言语失语。</p>
-                   </div>
-                   <div className="bg-gray-900 border border-gray-800 rounded p-4 text-xs space-y-2">
-                      <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800">高级认知与前额叶</h4>
-                      <p><strong className="text-white">BA 9,46:</strong> 背外侧前额叶背外侧 (dlPFC)，强认知负荷、工作记忆运算核心。</p>
-                      <p><strong className="text-white">BA 10:</strong> 极前额叶 (Frontal Pole)，最高级目标管理与意图维持区。</p>
-                   </div>
+                <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="bg-gray-900 border border-gray-800 rounded p-4 text-[11px] space-y-2">
+                        <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800 text-xs text-center">初级运动与体感系统</h4>
+                        <p><strong className="text-white inline-block w-16">BA 1,2,3:</strong> 初级躯体感觉皮层 (S1)，处理触压觉、本体感觉。位于中央后回。</p>
+                        <p><strong className="text-white inline-block w-16">BA 4:</strong> 初级运动皮层 (M1)，控制对侧躯体随意与精细运动。位于中央前回。</p>
+                        <p><strong className="text-white inline-block w-16">BA 5:</strong> 躯体感觉联合皮层，参与立体几何物体辨识。</p>
+                        <p><strong className="text-white inline-block w-16">BA 6:</strong> 前运动区与 SMA，负责复杂动作的序列规划与准备。</p>
+                        <p><strong className="text-white inline-block w-16">BA 7:</strong> 顶上小叶，负责视觉与运动的高级协调追踪。</p>
+                        <p><strong className="text-white inline-block w-16">BA 8:</strong> 额叶眼动区 (FEF)，控制眼球自主扫视与追随运动。</p>
+                        <p><strong className="text-white inline-block w-16">BA 43:</strong> 下顶盖区 (味觉初级皮层)，感受味觉传入核心区。</p>
+                     </div>
+                     <div className="bg-gray-900 border border-gray-800 rounded p-4 text-[11px] space-y-2">
+                        <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800 text-xs text-center">视觉皮层网络</h4>
+                        <p><strong className="text-white inline-block w-16">BA 17:</strong> 初级视觉皮层 (V1)，位于枕叶距状沟周围，处理物体基本方向轮廓与光场。</p>
+                        <p><strong className="text-white inline-block w-16">BA 18:</strong> 次级视觉联合皮层 (V2)，视觉信息的深度与特征初级整合。</p>
+                        <p><strong className="text-white inline-block w-16">BA 19:</strong> 联合视觉皮层 (V3, V4, V5)，发往背侧运动通路与腹侧颜色通路分流极站。</p>
+                        <p><strong className="text-white inline-block w-16">BA 20:</strong> 下颞回皮层，腹侧视觉流端站，高阶物体全局识别处理区。</p>
+                        <p><strong className="text-white inline-block w-16">BA 21:</strong> 中颞回特征区，参与语言及视觉记忆语义关联。</p>
+                        <p><strong className="text-white inline-block w-16">BA 37:</strong> 梭状回复合区，包含著名的面孔识别区 (FFA) 及视觉词形识别带。</p>
+                     </div>
+                     <div className="bg-gray-900 border border-gray-800 rounded p-4 text-[11px] space-y-2">
+                        <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800 text-xs text-center">听觉、语言与多感觉中枢</h4>
+                        <p><strong className="text-white inline-block w-16">BA 41,42:</strong> 初级听觉皮层 (A1) 及关联区，位于颞横回深部，精确判定音阶及频率输入。</p>
+                        <p><strong className="text-white inline-block w-16">BA 22:</strong> 包含 Wernicke 区带核心，极度特化于人类口头听觉语言的感受性语义理解。</p>
+                        <p><strong className="text-white inline-block w-16">BA 39:</strong> 角回 (Angular gyrus)，语言的视觉及听觉跨模态转换枢纽、阅读及隐喻处理中心。</p>
+                        <p><strong className="text-white inline-block w-16">BA 40:</strong> 缘上回皮层区，负责语音工作记忆的在线缓存与提取复述通路支持。</p>
+                        <p><strong className="text-white inline-block w-16">BA 44,45:</strong> 经典的 Broca 运动性语言区核心带。损伤会导致说话语法重构严重受阻现象。</p>
+                        <p><strong className="text-white inline-block w-16">BA 52:</strong> 听觉与外侧岛盖区交界的辅助联合区网络。</p>
+                     </div>
+                     <div className="bg-gray-900 border border-gray-800 rounded p-4 text-[11px] space-y-2">
+                        <h4 className="text-sky-400 font-bold mb-2 pb-1 border-b border-gray-800 text-xs text-center">前额叶执行及边缘驱动系</h4>
+                        <p><strong className="text-white inline-block w-16">BA 9,46:</strong> 背外侧前额叶关键区 (dlPFC)，支持极强的工作记忆认知负荷计算核心。</p>
+                        <p><strong className="text-white inline-block w-16">BA 10:</strong> 极前额叶皮层区 (Frontal Pole)，全脑顶线行动目标监控及长程规划执行器。</p>
+                        <p><strong className="text-white inline-block w-16">BA 11,12:</strong> 腹正中眶额皮层带 (vmPFC)，内化社会规范价值、抑制冲突冲动行为。</p>
+                        <p><strong className="text-white inline-block w-16">BA 47:</strong> 额下回眶部特化区段，参与长句解构解析处理功能。</p>
+                        <p><strong className="text-white inline-block w-[72px]">BA 23-33:</strong> 扣带回复合系统：前扣带 (24/32) 处理痛觉与认知冲突监测，后扣带 (23/31) 为 DMN 主节点枢纽。</p>
+                        <p><strong className="text-white inline-block w-16">BA 28,34:</strong> 内嗅皮层特发区域，通往海马体长期记忆大门的咽喉通道。</p>
+                        <p><strong className="text-white inline-block w-16">BA 38:</strong> 颞极复合区，极特殊的具有个人标签属性记忆融合存储区域网络。</p>
+                     </div>
+                  </div>
                 </div>
               </div>
             )}
