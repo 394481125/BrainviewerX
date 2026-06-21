@@ -4,13 +4,15 @@ import { Eye, EyeOff, Layers, Settings2, Image as ImageIcon, Trash2, Scissors, I
 import LayerInfoModal from './LayerInfoModal';
 
 export default function Sidebar() {
-  const { nv, layers, setLayers, clipPlane, setClipPlane, viewMode, hoverText, showTeachingPanel, setShowTeachingPanel } = useViewer();
+  const { nv, layers, setLayers, clipPlane, setClipPlane, viewMode, hoverText, showTeachingPanel, setShowTeachingPanel, setToastMsg } = useViewer();
   const [colormaps, setColormaps] = useState<string[]>([]);
   const [refreshTick, setRefreshTick] = useState(0);
   const [infoLayerId, setInfoLayerId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'layers' | 'render' | 'analysis'>('layers');
   const [plotData, setPlotData] = useState<number[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const showToast = (message: string) => setToastMsg({ text: message, type: 'info' });
 
   useEffect(() => {
     if (nv) {
@@ -636,6 +638,30 @@ export default function Sidebar() {
                   className="w-full py-1.5 bg-sky-900/50 hover:bg-sky-800 border border-sky-800 text-sky-400 text-[10px] rounded transition-colors"
                >
                  导出 CSV 数据分析报告
+               </button>
+            </div>
+
+            <div className="bg-gray-900 border border-gray-800 rounded p-3 text-xs flex flex-col space-y-2">
+               <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">SPINS 图谱规范导出 (Pipeline)</h3>
+               <p className="text-[10px] text-gray-500 leading-relaxed">
+                 一键生成类似 MASILab SPINS 的规范化结果：包含在当前视角的「三面视图剖面截屏」与「3D 骨架渲染截图」，为学术报告或论文插图作准备。
+               </p>
+               <button 
+                  onClick={() => {
+                    if (nv) {
+                      nv.saveScene('SPINS_viewport_export.png');
+                      showToast('已下发指令导出当前视口快照图 (SPINS 格式)');
+                    }
+                  }}
+                  className="w-full py-1.5 bg-purple-900/30 hover:bg-purple-800 border border-purple-800 text-purple-300 text-[10px] rounded transition-colors"
+               >
+                 一键生成 SPINS 视图快照 (.png)
+               </button>
+               <button 
+                  onClick={() => setShowTeachingPanel(true)}
+                  className="w-full py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] rounded transition-colors"
+               >
+                 查阅 SPINS 图谱构建规范文档
                </button>
             </div>
           </div>

@@ -18,15 +18,16 @@ function InnerApp() {
       <Toolbar />
       <ToastContainer />
       <main className="flex flex-row flex-1 overflow-hidden relative">
-        <section className="flex-1 shrink flex bg-gray-900 p-1 relative">
+        <section className={`flex-1 shrink flex bg-gray-900 p-1 relative ${showTeachingPanel ? 'hidden' : ''}`}>
           <div className="flex-1 w-full h-full pane-border bg-black relative">
             <NiivueCanvas />
           </div>
         </section>
-        <Sidebar />
         
-        {showTeachingPanel && (
+        {showTeachingPanel ? (
           <TeachingPanel onClose={() => setShowTeachingPanel(false)} />
+        ) : (
+          <Sidebar />
         )}
       </main>
       <footer className="h-6 bg-gray-950 border-t border-gray-800 px-3 flex items-center justify-between text-[10px] shrink-0">

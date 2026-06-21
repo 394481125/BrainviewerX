@@ -1,11 +1,15 @@
 import React from 'react';
-import { BookOpen, X, BrainCircuit, Search, Database } from 'lucide-react';
+import { BookOpen, X, BrainCircuit, Search, Database, ExternalLink } from 'lucide-react';
+import { spinsData } from '../spins_data';
+import { RegionDetail } from './RegionDetail';
 
 export default function TeachingPanel({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = React.useState('intro');
+  const [selectedRegion, setSelectedRegion] = React.useState<{ url: string; title: string, color: string, type: string } | null>(null);
 
   return (
-    <div className="absolute inset-0 z-[80] bg-gray-950 flex flex-col text-gray-300 animate-in fade-in zoom-in-95 duration-200">
+    <div className="flex-1 w-full bg-gray-950 flex flex-col text-gray-300 animate-in fade-in zoom-in-95 duration-200">
+      {selectedRegion && <RegionDetail region={selectedRegion} onBack={() => setSelectedRegion(null)} />}
       <div className="h-14 border-b border-gray-800 flex items-center justify-between px-6 shrink-0 bg-gray-900/50">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded bg-sky-500/20 text-sky-400 flex items-center justify-center">
@@ -42,6 +46,22 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
             </button>
             <button onClick={() => setActiveTab('ba')} className={`w-full text-left px-4 py-2 rounded-md transition-colors ${activeTab === 'ba' ? 'bg-sky-500/20 text-sky-400 font-medium' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
               <Database size={12} className="inline mr-2 opacity-60" /> Brodmann 细胞构筑图谱
+            </button>
+            
+            <div className="pt-4 pb-1">
+               <span className="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">SPINS 在线图谱库</span>
+            </div>
+            <button onClick={() => setActiveTab('spins')} className={`w-full text-left px-4 py-2 rounded-md transition-colors border border-sky-500/30 ${activeTab === 'spins' ? 'bg-sky-500/20 text-sky-400 font-medium' : 'text-sky-200 hover:text-sky-100 hover:bg-gray-800/50'}`}>
+              <BrainCircuit size={12} className="inline mr-2 opacity-60" /> SPINS 系统导论
+            </button>
+            <button onClick={() => setActiveTab('spins_braincolor')} className={`w-full text-left px-4 py-2 rounded-md transition-colors pl-8 ${activeTab === 'spins_braincolor' ? 'bg-sky-500/10 text-sky-400 font-medium' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-500 inline-block mr-2"></span> brainCOLOR (121)
+            </button>
+            <button onClick={() => setActiveTab('spins_yeo')} className={`w-full text-left px-4 py-2 rounded-md transition-colors pl-8 ${activeTab === 'spins_yeo' ? 'bg-sky-500/10 text-teal-400 font-medium' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-600 inline-block mr-2"></span> Yeo 17-Networks
+            </button>
+            <button onClick={() => setActiveTab('spins_pandora')} className={`w-full text-left px-4 py-2 rounded-md transition-colors pl-8 ${activeTab === 'spins_pandora' ? 'bg-sky-500/10 text-amber-400 font-medium' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 inline-block mr-2"></span> Pandora TractSeg (72)
             </button>
           </nav>
         </div>
@@ -349,9 +369,243 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
               </div>
             )}
 
+            {activeTab === 'spins' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                <h1 className="text-2xl font-bold text-white mb-2 pb-4 border-b border-gray-800">MASILab SPINS 图谱平台库 (SPINS Atlas Visualization Library)</h1>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  SPINS (A shared public library for brain atlas visualization) 是由 Vanderbilt 大学的 MASILab 创建的一个脑图谱公用项目。脑图谱对于理解解剖学至关重要，而 SPINS 构建了一个全自动的规范化流水线，利用 AI 与 3D 渲染器对脑区的灰质 (Gray matter), 白质 (White matter) 和静息态功能网络 (Functional labels) 进行批量可交互式重构。
+                </p>
+                
+                <div className="bg-black border border-gray-800 rounded-lg p-5">
+                  <h4 className="text-sm font-bold text-sky-400 uppercase tracking-widest mb-4 pb-2 border-b border-gray-800">SPINS 系统涵盖的三大核心图谱类型</h4>
+                  
+                  <div className="space-y-5">
+                    {/* brainCOLOR */}
+                    <div className="bg-gray-900 border-l-4 border-l-gray-500 rounded p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="bg-gray-800 text-gray-300 text-[10px] font-mono px-2 py-0.5 rounded tracking-wider uppercase">Gray Matter</span>
+                        <h5 className="font-bold text-white text-sm">brainCOLOR 皮层与皮下结构图谱</h5>
+                      </div>
+                      <p className="text-gray-400 text-xs leading-relaxed mb-1">
+                        基于经典的形态学边界划分，涵盖 <strong className="text-gray-200">121 个脑区域</strong>。该模板实现了从大脑皮层表面到深部底节区域（如丘脑、尾状核等）的无缝拼接，是进行形态学容积测算和常规结构像（T1）标注的最佳普适性基础选择。
+                      </p>
+                    </div>
+
+                    {/* Yeo 17 */}
+                    <div className="bg-gray-900 border-l-4 border-l-teal-600 rounded p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="bg-teal-900/30 text-teal-400 text-[10px] font-mono px-2 py-0.5 rounded tracking-wider uppercase">Functional</span>
+                        <h5 className="font-bold text-white text-sm">Yeo 17-Network 静息态功能网络图谱</h5>
+                      </div>
+                      <p className="text-gray-400 text-xs leading-relaxed mb-1">
+                        由 Yeo 等人基于大规模 fMRI 静息态数据聚类计算生成。包含 <strong className="text-gray-200">17 个全脑同步网络</strong> (例如: 默认模式网络 DMN, 额顶注意网络 FPN, 突显网络 SN, 腹侧注意网络 VAN 等)。这是神经功能网络分析 (FC) 研究中认知功能划分的黄金规范标准模板之一。
+                      </p>
+                    </div>
+
+                    {/* Pandora TractSeg */}
+                    <div className="bg-gray-900 border-l-4 border-l-amber-600 rounded p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="bg-amber-900/30 text-amber-400 text-[10px] font-mono px-2 py-0.5 rounded tracking-wider uppercase">White Matter</span>
+                        <h5 className="font-bold text-white text-sm">Pandora TractSeg 神经纤维束白质图谱</h5>
+                      </div>
+                      <p className="text-gray-400 text-xs leading-relaxed mb-1">
+                        专门面向弥散张量成像 (DTI / DWI) 与白质高信号处理。包含 <strong className="text-gray-200">72 个标准化微结构神经纤维束</strong>（如上纵束、皮质脊髓束、穹窿等）。在脑网络通信（Connectome）、大脑外伤（TBI）、中风（Stroke）引起的解剖学断连研究中起确凿诊断作用。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-900/60 border border-sky-900/30 rounded-lg p-5">
+                   <h4 className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-3">SPINS 规范化可视化处理流水线与知识点总结</h4>
+                   <ul className="list-decimal list-inside text-[11px] text-gray-400 space-y-2 mb-4 cursor-default">
+                     <li><strong>Standard Space Registration:</strong> 首先将原空间 NIfTI 图谱向 MNI 模板空间完成线性配准，确保提取时的原点与网格间距标准化。</li>
+                     <li><strong>Extraction & Masks:</strong> 穷举所有标签 (Label)，以单文件方式隔离提取每个脑区。这在 WebGL 端通常可转化为位运算符实现实时剥离。</li>
+                     <li><strong>Glass Brain Rendering:</strong> 透明骨架 (Glass brain) 通过透明表面混合技术（Alpha-Blending, Ray-casting）投射在屏幕空间，这正是当前可视化模块正在计算的过程。</li>
+                     <li><strong>LLM Auto-documentation:</strong> SPINS 利用大语言模型 (GPT-4o) 结合神经科学医学百科词条，自动化生成了所有大区段的功能详述——这也完美体现在了现在侧边栏的功能扩展和查询体系之中。</li>
+                   </ul>
+
+                   <div className="border-t border-sky-900/40 pt-4 mt-2">
+                     <h5 className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-2">SPINS 收录的重要图谱条目 (Atlas Items)</h5>
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div className="bg-black/50 border border-gray-800 p-3 rounded">
+                         <h6 className="text-[10px] font-bold text-gray-400 border-b border-gray-800 pb-1 mb-2">Yeo 17-Networks (部分功能网络)</h6>
+                         <ul className="text-[10px] text-gray-500 space-y-1">
+                           <li>Visual A/B (视觉网络)</li>
+                           <li>Somatomotor A/B (体感运动网络)</li>
+                           <li>Dorsal Attention A/B (背侧注意)</li>
+                           <li>Salience/Ventral Attention (突显网络)</li>
+                           <li>Control A/B/C (认知控制网络)</li>
+                           <li>Default Mode A/B/C (默认模式网络 DMN)</li>
+                           <li>Limbic A/B (边缘网络)</li>
+                           <li>TempPar (颞顶网络)</li>
+                         </ul>
+                       </div>
+
+                       <div className="bg-black/50 border border-gray-800 p-3 rounded">
+                         <h6 className="text-[10px] font-bold text-gray-400 border-b border-gray-800 pb-1 mb-2">Pandora TractSeg (部分白质纤维束)</h6>
+                         <ul className="text-[10px] text-gray-500 space-y-1">
+                           <li>Arcuate Fasciculus (弓状束)</li>
+                           <li>Cingulum (扣带束)</li>
+                           <li>Corpus Callosum (胼胝体)</li>
+                           <li>Corticospinal Tract (皮质脊髓束)</li>
+                           <li>Fornix (穹窿)</li>
+                           <li>Inferior Fronto-Occipital Fasciculus</li>
+                           <li>Optic Radiation (视辐射)</li>
+                           <li>Superior Longitudinal Fasciculus (上纵束)</li>
+                         </ul>
+                       </div>
+
+                       <div className="bg-black/50 border border-gray-800 p-3 rounded">
+                         <h6 className="text-[10px] font-bold text-gray-400 border-b border-gray-800 pb-1 mb-2">brainCOLOR (宏观皮层代表)</h6>
+                         <ul className="text-[10px] text-gray-500 space-y-1">
+                           <li>Frontal Pole (额极)</li>
+                           <li>Precentral Gyrus (中央前回)</li>
+                           <li>Superior Temporal Gyrus (颞上回)</li>
+                           <li>Cingulate Cortex (扣带皮层)</li>
+                           <li>Calcarine Cortex (距状沟皮层)</li>
+                           <li>Insula (脑岛)</li>
+                           <li>Thalamus (丘脑 - 皮下)</li>
+                           <li>Putamen / Caudate (壳核/尾状核)</li>
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+
+                   <div className="mt-4 bg-black/40 border border-gray-800 p-3 rounded flex flex-col text-[10px] text-gray-500 border-l-2 border-l-blue-500">
+                     <span className="font-bold text-gray-400 mb-1">学术引用 (Citation):</span>
+                     <em>Wali Sidiqyar, Gaurav Rudravaram, Elyssa M. McMaster, Trent M. Schwartz, Adam M. Saunders, Kurt G. Schilling, Bennett A. Landman "Introducing SPINS: A Shared Public Visualization Library of Neuroanatomical Structures."</em>
+                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'spins_braincolor' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex justify-between items-center pb-4 border-b border-gray-800">
+                  <h1 className="text-2xl font-bold text-white">brainCOLOR (灰质图谱)</h1>
+                  <a href="https://masilab.github.io/SPINS/brainCOLOR_cortical/" target="_blank" rel="noopener noreferrer" className="flex items-center text-xs font-bold text-sky-400 hover:text-sky-300">
+                    <ExternalLink size={14} className="mr-1" /> 原站对照
+                  </a>
+                </div>
+                <div className="prose prose-invert prose-sm">
+                  <p className="text-gray-400 leading-relaxed">
+                    brainCOLOR 图谱是一个手工标注的人类神经解剖学分区方案，专家评分员在高分辨率 MRI 扫描上勾画了数百个皮质和皮层下结构，为全脑的灰质和白质区域分配了一致的、颜色编码的标签。
+                  </p>
+                  <img src="https://masilab.github.io/SPINS/brainCOLOR_cortical/exploding_glass_brain.gif" alt="brainCOLOR glass brain" className="w-full rounded-lg border border-gray-800 shadow-xl" />
+                </div>
+                <div className="bg-black border border-gray-800 rounded-lg p-4">
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">区域列表 (Regions Index) - 点击查看详情 (Click for details)</h4>
+                  <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <table className="w-full text-[11px] text-left mb-6">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
+                          <th className="pb-2 w-16">ID</th>
+                          <th className="pb-2 w-48">解剖区域名称 (Anatomy)</th>
+                          <th className="pb-2">原始链接映射 (Link Path)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-300">
+                        {spinsData.brainCOLOR.map((row) => (
+                          <tr key={row[0]} onClick={() => setSelectedRegion({ url: row[2], title: row[1], color: '#38bdf8', type: 'braincolor' })} className="border-b border-gray-800/50 hover:bg-gray-800/80 transition-colors cursor-pointer group">
+                            <td className="py-2 text-gray-500">{row[0]}</td>
+                            <td className="py-2 text-sky-200 group-hover:text-sky-300 font-medium underline underline-offset-2">{row[1]}</td>
+                            <td className="py-2 text-gray-400">{row[2]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'spins_yeo' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex justify-between items-center pb-4 border-b border-gray-800">
+                  <h1 className="text-2xl font-bold text-teal-400">Yeo 17 脑网络 (功能图谱)</h1>
+                  <a href="https://masilab.github.io/SPINS/Yeo17_renders/" target="_blank" rel="noopener noreferrer" className="flex items-center text-xs font-bold text-teal-400 hover:text-teal-300">
+                    <ExternalLink size={14} className="mr-1" /> 原站对照
+                  </a>
+                </div>
+                <div className="prose prose-invert prose-sm">
+                  <p className="text-gray-400 leading-relaxed">
+                    Yeo-17 脑图谱是一个大规模皮层分区，它基于静息态功能 MRI (rs-fMRI) 连接模式将人类大脑皮层划分为 17 个固有的功能网络，捕捉了更广泛系统（如视觉、躯体运动、背侧和腹侧注意力、边缘系统、额顶叶控制和默认模式网络）中更细粒度的子网络。
+                  </p>
+                  <video src="https://masilab.github.io/SPINS/Yeo17_renders/yeo17.mp4" autoPlay loop muted playsInline className="w-full rounded-lg border border-gray-800 shadow-xl" />
+                </div>
+                <div className="bg-black border border-gray-800 rounded-lg p-4">
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">网络列表 (Networks Index) - 点击查看详情 (Click for details)</h4>
+                  <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <table className="w-full text-[11px] text-left mb-6">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
+                          <th className="pb-2 w-16">ID</th>
+                          <th className="pb-2 w-48">网络区域名称 (Function)</th>
+                          <th className="pb-2">原始链接映射 (Link Path)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-300">
+                        {spinsData.Yeo17.map((row) => (
+                          <tr key={row[0]} onClick={() => setSelectedRegion({ url: row[2], title: row[1], color: '#2dd4bf', type: 'yeo' })} className="border-b border-gray-800/50 hover:bg-gray-800/80 transition-colors cursor-pointer group">
+                            <td className="py-2 text-gray-500">{row[0]}</td>
+                            <td className="py-2 font-bold text-teal-200 group-hover:text-teal-300 underline underline-offset-2">{row[1]}</td>
+                            <td className="py-2 text-gray-400">{row[2]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'spins_pandora' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex justify-between items-center pb-4 border-b border-gray-800">
+                  <h1 className="text-2xl font-bold text-amber-500">Pandora TractSeg (白质图谱)</h1>
+                  <a href="https://masilab.github.io/SPINS/Pandora_renders/" target="_blank" rel="noopener noreferrer" className="flex items-center text-xs font-bold text-amber-500 hover:text-amber-400">
+                    <ExternalLink size={14} className="mr-1" /> 原站对照
+                  </a>
+                </div>
+                <div className="prose prose-invert prose-sm">
+                  <p className="text-gray-400 leading-relaxed">
+                    Pandora-TractSeg 脑图谱是源自 Pandora 数据集的白质纤维束分区，该数据集聚合了使用 TractSeg 框架处理的多队列、多扫描仪扩散 MRI，以产生大脑中主要纤维束的一致的、数据驱动的轮廓。
+                  </p>
+                  <video src="https://masilab.github.io/SPINS/Pandora_renders/spinning_bundles_2.mp4" autoPlay loop muted playsInline className="w-full rounded-lg border border-gray-800 shadow-xl" />
+                </div>
+                <div className="bg-black border border-gray-800 rounded-lg p-4">
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">纤维束列表 (Tracts Index) - 点击查看详情 (Click for details)</h4>
+                  <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <table className="w-full text-[11px] text-left mb-6">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
+                          <th className="pb-2 w-16">ID</th>
+                          <th className="pb-2 w-48">纤维束名称 (Tract Name)</th>
+                          <th className="pb-2">原始链接映射 (Link Path)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-300">
+                        {spinsData.Pandora.map((row) => (
+                          <tr key={row[0]} onClick={() => setSelectedRegion({ url: row[2], title: row[1], color: '#f59e0b', type: 'pandora' })} className="border-b border-gray-800/50 hover:bg-gray-800/80 transition-colors cursor-pointer group">
+                            <td className="py-2 text-gray-500">{row[0]}</td>
+                            <td className="py-2 text-amber-200 group-hover:text-amber-300 font-medium underline underline-offset-2">{row[1]}</td>
+                            <td className="py-2 text-gray-400">{row[2]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+// Rebuild trigger
+// Rebuild trigger
