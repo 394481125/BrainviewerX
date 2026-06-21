@@ -2,6 +2,7 @@ import React from 'react';
 import { BookOpen, X, BrainCircuit, Search, Database, ExternalLink } from 'lucide-react';
 import { spinsData } from '../spins_data';
 import { RegionDetail } from './RegionDetail';
+import nameTranslations from '../name_translations.json';
 
 export default function TeachingPanel({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = React.useState('intro');
@@ -502,6 +503,7 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                         <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
                           <th className="pb-2 w-16">ID</th>
                           <th className="pb-2 w-48">解剖区域名称 (Anatomy)</th>
+                          <th className="pb-2 w-48">中文名称 (Chinese Name)</th>
                           <th className="pb-2">原始链接映射 (Link Path)</th>
                         </tr>
                       </thead>
@@ -510,6 +512,7 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                           <tr key={row[0]} onClick={() => setSelectedRegion({ url: row[2], title: row[1], color: '#38bdf8', type: 'braincolor' })} className="border-b border-gray-800/50 hover:bg-gray-800/80 transition-colors cursor-pointer group">
                             <td className="py-2 text-gray-500">{row[0]}</td>
                             <td className="py-2 text-sky-200 group-hover:text-sky-300 font-medium underline underline-offset-2">{row[1]}</td>
+                            <td className="py-2 text-gray-400">{(nameTranslations as Record<string, string>)[row[1]] || ''}</td>
                             <td className="py-2 text-gray-400">{row[2]}</td>
                           </tr>
                         ))}
@@ -542,6 +545,7 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                         <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
                           <th className="pb-2 w-16">ID</th>
                           <th className="pb-2 w-48">网络区域名称 (Function)</th>
+                          <th className="pb-2 w-48">中文名称 (Chinese Name)</th>
                           <th className="pb-2">原始链接映射 (Link Path)</th>
                         </tr>
                       </thead>
@@ -550,6 +554,7 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                           <tr key={row[0]} onClick={() => setSelectedRegion({ url: row[2], title: row[1], color: '#2dd4bf', type: 'yeo' })} className="border-b border-gray-800/50 hover:bg-gray-800/80 transition-colors cursor-pointer group">
                             <td className="py-2 text-gray-500">{row[0]}</td>
                             <td className="py-2 font-bold text-teal-200 group-hover:text-teal-300 underline underline-offset-2">{row[1]}</td>
+                            <td className="py-2 text-gray-400">{(nameTranslations as Record<string, string>)[row[1]] || ''}</td>
                             <td className="py-2 text-gray-400">{row[2]}</td>
                           </tr>
                         ))}
@@ -582,6 +587,7 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                         <tr className="text-gray-500 border-b border-gray-800 sticky top-0 bg-black">
                           <th className="pb-2 w-16">ID</th>
                           <th className="pb-2 w-48">纤维束名称 (Tract Name)</th>
+                          <th className="pb-2 w-48">中文名称 (Chinese Name)</th>
                           <th className="pb-2">原始链接映射 (Link Path)</th>
                         </tr>
                       </thead>
@@ -590,6 +596,7 @@ export default function TeachingPanel({ onClose }: { onClose: () => void }) {
                           <tr key={row[0]} onClick={() => setSelectedRegion({ url: row[2], title: row[1], color: '#f59e0b', type: 'pandora' })} className="border-b border-gray-800/50 hover:bg-gray-800/80 transition-colors cursor-pointer group">
                             <td className="py-2 text-gray-500">{row[0]}</td>
                             <td className="py-2 text-amber-200 group-hover:text-amber-300 font-medium underline underline-offset-2">{row[1]}</td>
+                            <td className="py-2 text-gray-400">{(nameTranslations as Record<string, string>)[row[1]] || ''}</td>
                             <td className="py-2 text-gray-400">{row[2]}</td>
                           </tr>
                         ))}

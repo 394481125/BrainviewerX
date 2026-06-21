@@ -29,7 +29,7 @@ export function RegionDetail({ region, onBack }: { region: { url: string; title:
                          const video = document.createElement('video');
                          video.src = `${baseUrl}${region.url}/` + src;
                          video.className = "rounded-lg border border-gray-800 my-4 max-w-full block shadow-lg shadow-black/50 mx-auto";
-                         video.autoPlay = true;
+                         video.autoplay = true;
                          video.loop = true;
                          video.muted = true;
                          video.playsInline = true;

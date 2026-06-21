@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ViewerProvider, useViewer } from './context';
-import Toolbar from './components/Toolbar';
-import Sidebar from './components/Sidebar';
-import NiivueCanvas from './components/NiivueCanvas';
-import TeachingPanel from './components/TeachingPanel';
-import ToastContainer from './components/Toast';
+import { ViewerProvider, useViewer } from "./context";
+import Toolbar from "./components/Toolbar";
+import Sidebar from "./components/Sidebar";
+import NiivueCanvas from "./components/NiivueCanvas";
+import TeachingPanel from "./components/TeachingPanel";
+import ToastContainer from "./components/Toast";
+import PerformanceMonitor from "./components/PerformanceMonitor";
 
 function InnerApp() {
   const { showTeachingPanel, setShowTeachingPanel } = useViewer();
@@ -18,12 +19,14 @@ function InnerApp() {
       <Toolbar />
       <ToastContainer />
       <main className="flex flex-row flex-1 overflow-hidden relative">
-        <section className={`flex-1 shrink flex bg-gray-900 p-1 relative ${showTeachingPanel ? 'hidden' : ''}`}>
+        <section
+          className={`flex-1 shrink flex bg-gray-900 p-1 relative ${showTeachingPanel ? "hidden" : ""}`}
+        >
           <div className="flex-1 w-full h-full pane-border bg-black relative">
             <NiivueCanvas />
           </div>
         </section>
-        
+
         {showTeachingPanel ? (
           <TeachingPanel onClose={() => setShowTeachingPanel(false)} />
         ) : (
@@ -35,10 +38,20 @@ function InnerApp() {
           <span className="text-gray-500 tracking-wider">工作区</span>
           <span className="text-sky-500 font-mono">WEBGL 2.0 引擎</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-green-500 opacity-80">纯前端离线渲染</span>
-          <span className="text-gray-700 font-bold px-1">|</span>
-          <span className="font-mono text-gray-400">v4.2.0稳定版</span>
+        <div className="flex items-center space-x-4">
+          <PerformanceMonitor />
+          <span className="text-gray-700 font-bold px-1 hidden sm:inline">
+            |
+          </span>
+          <span className="text-green-500 opacity-80 hidden sm:inline">
+            纯前端离线渲染
+          </span>
+          <span className="text-gray-700 font-bold px-1 hidden sm:inline">
+            |
+          </span>
+          <span className="font-mono text-gray-400 hidden sm:inline">
+            v4.2.0稳定版
+          </span>
         </div>
       </footer>
     </div>
@@ -52,4 +65,3 @@ export default function App() {
     </ViewerProvider>
   );
 }
-
