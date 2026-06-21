@@ -1,6 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useViewer } from "../context";
 import {
+  normalizeMinMax,
+  normalizeZScore,
+  applyThresholdMean,
+  invertImage,
+  calculateROIStats,
+  boxBlur3D,
+} from "../lib/imageProcessing";
+import {
   Square,
   LayoutGrid,
   Grid2X2,
@@ -264,6 +272,120 @@ export default function Toolbar() {
                     "图片文件 screenshot.png 已经保存到本地。",
                     "success",
                   );
+                },
+              },
+            ]}
+          />
+          <DropdownMenu
+            label="轻量预处理"
+            items={[
+              {
+                label: "灰度归一化 (Min/Max)",
+                onClick: () => {
+                  if (nv && nv.volumes.length > 0) {
+                    const v = nv.volumes[0];
+                    const processedImg = normalizeMinMax(v.img);
+                    v.img = processedImg;
+                    v.cal_min = 0;
+                    v.cal_max = 1;
+                    v.robust_min = 0;
+                    v.robust_max = 1;
+                    nv.updateGLVolume();
+                    showToast("预处理完成", "影像已线性归一化到 [0, 1]", "success");
+                  }
+                },
+              },
+              {
+                label: "灰度标准化 (Z-Score)",
+                onClick: () => {
+                  if (nv && nv.volumes.length > 0) {
+                    const v = nv.volumes[0];
+                    const processedImg = normalizeZScore(v.img);
+                    v.img = processedImg;
+                    // standard normal distribution values
+                    v.cal_min = -3;
+                    v.cal_max = 3;
+                    nv.updateGLVolume();
+                    showToast("预处理完成", "影像已通过 Z-Score 标准化 (将对比度范围调整为均值±3倍标准差)", "success");
+                  }
+                },
+              },
+              {
+                label: "快速平滑降噪 (Box Blur)",
+                onClick: () => {
+                  if (nv && nv.volumes.length > 0) {
+                    showToast("任务提交", "正在执行空间降噪，请稍候...", "info");
+                    setTimeout(() => {
+                        const v = nv.volumes[0];
+                        const processedImg = boxBlur3D(v.img, v.hdr.dims.slice(1, 4));
+                        v.img = processedImg;
+                        nv.updateGLVolume();
+                        showToast("预处理完成", "空间高斯模糊降噪已完成", "success");
+                    }, 50);
+                  }
+                },
+              },
+              {
+                label: "阈值分割 (Mean Threshold)",
+                onClick: () => {
+                  if (nv && nv.volumes.length > 0) {
+                    const v = nv.volumes[0];
+                    const processedImg = applyThresholdMean(v.img);
+                    v.img = processedImg;
+                    v.cal_min = 0;
+                    v.cal_max = 1;
+                    nv.updateGLVolume();
+                    showToast("预处理完成", "已执行均值阈值分割与二值化", "success");
+                  }
+                },
+              },
+              {
+                label: "背景裁剪/颅骨剔除初筛",
+                onClick: () => {
+                  if (nv && nv.volumes.length > 0) {
+                    const v = nv.volumes[0];
+                    // Keep values above mean
+                    let sum = 0;
+                    let count = 0;
+                    for (let i = 0; i < v.img.length; i++) {
+                      if (v.img[i] > 0) {
+                        sum += v.img[i];
+                        count++;
+                      }
+                    }
+                    const mean = count === 0 ? 0 : sum / count;
+                    let kept = 0;
+                    for (let i = 0; i < v.img.length; i++) {
+                      if (v.img[i] < mean * 0.5) v.img[i] = 0;
+                      else kept++;
+                    }
+                    nv.updateGLVolume();
+                    showToast("预处理完成", `简易背景与低频头骨剔除。保留体素: ${kept}`, "success");
+                  }
+                },
+              },
+              {
+                label: "影像反转 (Invert Mask)",
+                onClick: () => {
+                  if (nv && nv.volumes.length > 0) {
+                    const v = nv.volumes[0];
+                    const processedImg = invertImage(v.img);
+                    v.img = processedImg;
+                    nv.updateGLVolume();
+                    showToast("预处理完成", "组织密度与灰度亮度已反转", "success");
+                  }
+                },
+              },
+              {
+                label: "定量分析: ROI 统计",
+                onClick: () => {
+                  if (nv && nv.volumes.length > 0) {
+                    const v = nv.volumes[0];
+                    const stats = calculateROIStats(v.img);
+                    const msg = `最小: ${stats.min.toFixed(2)}, 最大: ${stats.max.toFixed(2)}\n均值: ${stats.mean.toFixed(2)}, 标准差: ${(stats.std).toFixed(2)}\n体素数: ${stats.count}`;
+                    alert(`全图区域与体素强度定量分析概览:\n\n${msg}`);
+                    showToast("分析完成", "定量数据见弹窗", "info");
+                  }
                 },
               },
             ]}
